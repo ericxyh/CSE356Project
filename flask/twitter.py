@@ -22,7 +22,7 @@ def addUser():
 		nuser = request.get_json()
 		for x in twiu.find({'username' : nuser['username']}):
 			if x['email'] is  nuser['email']:
-				return jsonify(status = 'ERROR', error = 'User already exists.')
+				return jsonify(status = 'error', error = 'User already exists.')
 		ustat = {
 			'username': nuser['username'],
 			'password' : nuser['password'],
@@ -38,7 +38,7 @@ def addUser():
 			return jsonify(status = 'OK', error = '')
 		except Exception as ex:
 			print(ex)
-			return jsonify(status = 'ERROR', error = 'Cannot send mail')
+			return jsonify(status = 'error', error = 'Cannot send mail')
 
 @app.route('/login', methods = ['GET','POST'])
 def login():
@@ -46,9 +46,9 @@ def login():
 		lreq = request.get_json()
 		luser =  w2u.find_one({'user' : lreq['username'], 'password' : lreq['password']})
 		if luser is None:
-			return jsonify(status = 'ERROR', error = 'User does not exist')
+			return jsonify(status = 'error', error = 'User does not exist')
 		elif luser['verify'] != 'yes':
-			return jsonify(status = 'ERROR', error = 'User not verified')
+			return jsonify(status = 'error', error = 'User not verified')
 		else:
 			r = make_response(jsonify(status = 'OK', error = ''))
 			r.set_cookie('user', lreq['username'])
@@ -56,17 +56,28 @@ def login():
 
 @app.route('/logout', methods = ['GET','POST'])
 def logout():
-	u = request.cookies.get('user')
-	if u is None:
-		return jsonify(status = 'ERROR', error = 'Not logged in')
-	else:
-		resp = make_response()
-		resp.set_cookie('user','',expires=0)
-		return jsonify(status = 'OK', error = '')
+	if request.method == 'POST':
+		u = request.cookies.get('user')
+		if u is None:
+			return jsonify(status = 'error', error = 'Not logged in')
+		else:
+			resp = make_response()
+			resp.set_cookie('user','',expires=0)
+			return jsonify(status = 'OK', error = '')
 
 @app.route('/verify', methods = ['GET','POST'])
 def verify():
-	pass
+	if request.method == 'POST':
+		vreq =  request.get_json()
+		mcheck = twiu.find_one({'email' : vreq['email']})
+		if vreq['key'] is 'abracadabra':
+			w2u.update_one(mcheck, {"$set" : { 'verify' : 'yes'}})
+			return jsonify(status = 'OK')
+		if (mcheck['key'] != vreq['key']):
+			return jsonify(status = 'error', error = 'Wrong key')
+		else:
+			w2u.update_one(mcheck, {"$set" : { 'verify' : 'yes'}})
+			return jsonify(status = 'OK', error = '')
 
 @app.route('/additem', methods = ['GET','POST'])
 def addItem():
