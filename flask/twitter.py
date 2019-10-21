@@ -104,23 +104,22 @@ def addItem():
 		if u is None:
 			return jsonify(status = 'error', error = 'Not logged in')
 		areq = request.get_json()
-		print(u,'additem',areq,)
+		if 'content' not in areq.keys():
+			return jsonify(status = 'error', error = 'No content in post')
+		print(u,'additem',areq)
 		newitem = {
 			'username' : u,
 			'property' : {'likes':0},
 			'retweeted' : 0,
 			'timestamp' : int(time.time()),
-			'content' : '',
+			'content' : areq['content'],
 			'childType' : None
 		}
-		if 'content' in areq.keys():
-			newitem['content'] = areq['content']
 		if 'childType' in areq.keys():
 			newitem['childType'] = areq['childType']
 		pid = twip.insert_one(newitem)
 		spid = str(pid.inserted_id)
 		res = jsonify(status = 'OK', id = spid)
-		print(res.headers, res.get_json())
 		return jsonify(status = 'OK', id = '0')
 
 @app.route('/item/<id>', methods = ['GET'])
