@@ -1,13 +1,14 @@
 from flask import Flask, request, render_template, jsonify, make_response
 from flask_mail import Mail, Message
 from bson.objectid import ObjectId
-import datetime, random, smtplib
+import time, random, smtplib
 from pymongo import MongoClient
 
 
 client = MongoClient()
 db = client.twitter
 twiu = db.users
+twip = db.posts
 
 app = Flask(__name__)
 mail = Mail(app)
@@ -19,7 +20,9 @@ def default():
 @app.route('/reset', methods = ['GET','POST'])
 def reset():
 	twiu.remove()
+	twip.remove()
 	return('Removed!')
+
 @app.route('/adduser', methods = ['GET','POST'])
 def addUser():
 	if request.method == 'POST':
@@ -64,8 +67,13 @@ def login():
 
 @app.route('/logout', methods = ['GET','POST'])
 def logout():
+	u = request.cookies.get('user')
+	if request.method == 'GET':
+		if u is None:
+			return 'Not logged in'
+		else:
+			return ' '+u+'is logged in'
 	if request.method == 'POST':
-		u = request.cookies.get('user')
 		if u is None:
 			return jsonify(status = 'error', error = 'Not logged in')
 		else:
@@ -82,16 +90,38 @@ def verify():
 		print (mcheck)
 		if vreq['key'] is 'abracadabra':
 			twiu.update_one(mcheck, {"$set" : { 'verify' : 'yes'}})
-			return jsonify(status = 'OK', error = '')
+			return jsonify(status = 'OK')
 		if (mcheck['key'] != vreq['key']):
 			return jsonify(status = 'error', error = 'Wrong key')
 		else:
 			twiu.update_one(mcheck, {"$set" : { 'verify' : 'yes'}})
-			return jsonify(status = 'OK', error = '')
+			return jsonify(status = 'OK')
 
 @app.route('/additem', methods = ['GET','POST'])
 def addItem():
-	pass
+	if request.method == 'POST':
+		u = request.cookies.get('user')
+		if u is None:
+			return jsonify(status = 'error', error = 'Not logged in')
+		areq = request.get_json()
+		print(u,'additem',areq,)
+		newitem = {
+			'username' : u,
+			'property' : {'likes':0},
+			'retweeted' : 0,
+			'timestamp' : int(time.time()),
+			'content' : '',
+			'childType' : None
+		}
+		if 'content' in areq.keys():
+			newitem['content'] = areq['content']
+		if 'childType' in areq.keys():
+			newitem['childType'] = areq['childType']
+		pid = twip.insert_one(newitem)
+		spid = str(pid.inserted_id)
+		res = jsonify(status = 'OK', id = spid)
+		print(res.headers, res.get_json())
+		return jsonify(status = 'OK', id = '0')
 
 @app.route('/item/<id>', methods = ['GET'])
 def getPost(id):
