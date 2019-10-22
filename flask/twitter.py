@@ -17,17 +17,17 @@ mail = Mail(app)
 def default():
 	return('Welcome!')
 
-@app.route('/reset', methods = ['GET','POST'])
+@app.route('/reset', methods = ['POST'])
 def reset():
 	twiu.remove()
 	twip.remove()
 	return('Removed!')
 
-@app.route('/adduser', methods = ['GET','POST'])
+@app.route('/adduser', methods = ['POST'])
 def addUser():
 	if request.method == 'POST':
 		nuser = request.get_json()
-		print('sign up',nuser)
+#		print('sign up',nuser)
 		for x in twiu.find({'username' : nuser['username']}):
 			if x['email'] is  nuser['email']:
 				return jsonify(status = 'error', error = 'User already exists.')
@@ -46,16 +46,16 @@ def addUser():
 			mail.send(msg)
 			return jsonify(status = 'OK', error = '')
 		except Exception as ex:
-			print(ex)
+#			print(ex)
 			return jsonify(status = 'error', error = 'Cannot send mail')
 
-@app.route('/login', methods = ['GET','POST'])
+@app.route('/login', methods = ['POST'])
 def login():
 	if request.method == 'POST':
 		lreq = request.get_json()
-		print('sign in',lreq)
+#		print('sign in',lreq)
 		luser = twiu.find_one({'username' : lreq['username'], 'password' : lreq['password']})
-		print(luser)
+#		print(luser)
 		if luser is None:
 			return jsonify(status = 'error', error = 'User does not exist')
 		elif luser['verify'] != 'yes':
@@ -65,14 +65,9 @@ def login():
 			r.set_cookie('user', lreq['username'])
 			return r
 
-@app.route('/logout', methods = ['GET','POST'])
+@app.route('/logout', methods = ['POST'])
 def logout():
 	u = request.cookies.get('user')
-	if request.method == 'GET':
-		if u is None:
-			return 'Not logged in'
-		else:
-			return ' '+u+'is logged in'
 	if request.method == 'POST':
 		if u is None:
 			return jsonify(status = 'error', error = 'Not logged in')
@@ -81,13 +76,13 @@ def logout():
 			resp.set_cookie('user','',expires=0)
 			return jsonify(status = 'OK', error = '')
 
-@app.route('/verify', methods = ['GET','POST'])
+@app.route('/verify', methods = ['POST'])
 def verify():
 	if request.method == 'POST':
 		vreq =  request.get_json()
-		print('verify', vreq)
+#		print('verify', vreq)
 		mcheck = twiu.find_one({'email' : vreq['email']})
-		print (mcheck)
+#		print (mcheck)
 		if vreq['key'] is 'abracadabra':
 			twiu.update_one(mcheck, {"$set" : { 'verify' : 'yes'}})
 			return jsonify(status = 'OK')
@@ -97,7 +92,7 @@ def verify():
 			twiu.update_one(mcheck, {"$set" : { 'verify' : 'yes'}})
 			return jsonify(status = 'OK')
 
-@app.route('/additem', methods = ['GET','POST'])
+@app.route('/additem', methods = ['POST'])
 def addItem():
 	if request.method == 'POST':
 		u = request.cookies.get('user')
@@ -106,12 +101,12 @@ def addItem():
 		areq = request.get_json()
 		if 'content' not in areq.keys():
 			return jsonify(status = 'error', error = 'No content in post')
-		print(u,'additem',areq)
+#		print(u,'additem',areq)
 		newitem = {
 			'username' : u,
 			'property' : {'likes':0},
 			'retweeted' : 0,
-			'timestamp' : int(time.time()),
+			'timestamp' : time.time(),
 			'content' : areq['content'],
 			'childType' : None
 		}
@@ -121,23 +116,73 @@ def addItem():
 		spid = str(pid.inserted_id)
 		return jsonify(status = 'OK', id = spid)
 
-@app.route('/item/<id>', methods = ['GET'])
+@app.route('/item/<id>', methods = ['GET','DELETE'])
 def getPost(id):
 	post = twip.find_one({'_id': ObjectId(id)})
 	if post is None:
 		return jsonify(status = 'error', error = 'No post with the id of'+str(id))
-	ifound = {
-		'id' : id,
-		'username' : post['username'],
-		'property' : post['property'],
-		'retweeted' : post['retweeted'],
-		'content' : post['content'],
-		'timestamp' : post['timestamp']
-	}
-	return jsonify(status = 'OK', item = ifound)
+	if request.method == 'GET':
+		ifound = {
+			'id' : id,
+			'username' : post['username'],
+			'property' : post['property'],
+			'retweeted' : post['retweeted'],
+			'content' : post['content'],
+			'timestamp' : post['timestamp']
+		}
+		return jsonify(status = 'OK', item = ifound)
+	if request.method == 'DELETE':
+		pass
+####
 
-@app.route('/search', methods = ['GET','POST'])
+@app.route('/search', methods = ['POST'])
 def search():
+### search query, username, following
+	if request.method == 'POST':
+		sreq = request.get_json()
+		limit = 25
+		t = time.time()
+		items = []
+		if 'limit' in sreq.keys():
+			limit = sreq['limit']
+			if limit > 100:
+				lim = 100
+		if 'timestamp' in sreq.keys():
+			t = sreq['timestamp']
+		for x in twip.find({'timestamp': {"$lte": t}}):
+			if len(items)>=limit:
+				break
+			else:
+				i = {
+					'id' : str(x['_id']),
+					'username' : x['username'],
+					'property' : x['property'],
+					'retweeted' : x['retweeted'],
+					'content' : x['content'],
+					'timestamp' : x['timestamp']
+				}
+				items.append(i)
+#		print(items)
+		return jsonify(status = 'OK', items = items)
+
+@app.route('/user/<username>', methods = ['GET'])
+def userProfile(username):
+	pass
+
+@app.route('/user/<username>/posts', methods = ['GET'])
+def userPost(username):
+	pass
+
+@app.route('/user/<username>/followers', methods = ['GET'])
+def followUser(username):
+	pass
+
+@app.route('/user/<username>/following', methods = ['GET'])
+def userFollow():
+	pass
+
+@app.route('/follow', methods = ['POST'])
+def follow():
 	pass
 
 if __name__ == "__main__":
