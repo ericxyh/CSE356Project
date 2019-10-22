@@ -119,12 +119,22 @@ def addItem():
 			newitem['childType'] = areq['childType']
 		pid = twip.insert_one(newitem)
 		spid = str(pid.inserted_id)
-		res = jsonify(status = 'OK', id = spid)
-		return jsonify(status = 'OK', id = '0')
+		return jsonify(status = 'OK', id = spid)
 
 @app.route('/item/<id>', methods = ['GET'])
 def getPost(id):
-	pass
+	post = twip.find_one({'_id': ObjectId(id)})
+	if post is None:
+		return jsonify(status = 'error', error = 'No post with the id of'+str(id))
+	ifound = {
+		'id' : id,
+		'username' : post['username'],
+		'property' : post['property'],
+		'retweeted' : post['retweeted'],
+		'content' : post['content'],
+		'timestamp' : post['timestamp']
+	}
+	return jsonify(status = 'OK', item = ifound)
 
 @app.route('/search', methods = ['GET','POST'])
 def search():
