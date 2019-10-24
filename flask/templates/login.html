@@ -1,18 +1,36 @@
 <html>
 <head>
+<script>
+function login(){
+	var json = {};
+	json.username = document.getElementById("username").value;
+	json.password = document.getElementById("password").value;
+	var request = new XMLHttpRequest();
+	request.onreadystatechange = function(){
+		if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
+			var results = JSON.parse(request.responseText);
+			if(results.status === "OK")
+				document.getElementById("result").innerHTML = "You are logged in now."
+			if(results.status === "error")
+				document.getElementById("result").innerHTML = results.error
+		}
+	}
+	request.open("POST", "/login",true);
+	request.setRequestHeader("Content-Type","application/json");
+	request.send(JSON.stringify(json));
+}
+</script>
 </head>
 <body>
-Login!
-
-<form action="/action_page.php">
-  First name:<br>
-  <input type="text" name="firstname" value="Mickey">
+Login!<br>
+  Username:<br>
+  <input type="text" id="username">
   <br>
-  Last name:<br>
-  <input type="text" name="lastname" value="Mouse">
-  <br><br>
-  <input type="submit" value="Submit">
-</form> 
+  Password:<br>
+  <input type="password" id="password">
+  <br>
+<button onclick="login()">Login</button>
 <h3><a href="/">Back</a></h3>
+<div id="result"></div>
 </body>
 </html>

@@ -15,7 +15,11 @@ mail = Mail(app)
 
 @app.route('/', methods = ['GET'])
 def default():
-	return render_template('homepage.html')
+	u = request.cookies.get('user')
+	if u is None:
+		return render_template('homepage.html')
+	else:
+		return render_template('homepage.html',login=u)
 
 @app.route('/static/<pname>', methods = ['GET'])
 def getpage(pname):
@@ -86,6 +90,8 @@ def verify():
 		vreq =  request.get_json()
 #		print('verify', vreq)
 		mcheck = twiu.find_one({'email' : vreq['email']})
+		if mcheck is None:
+			return jsonify(status = 'error', error = 'Wrong email')
 #		print (mcheck)
 		if vreq['key'] is 'abracadabra':
 			twiu.update_one(mcheck, {"$set" : { 'verify' : 'yes'}})
@@ -122,7 +128,10 @@ def addItem():
 
 @app.route('/item/<id>', methods = ['GET','DELETE'])
 def getPost(id):
-	post = twip.find_one({'_id': ObjectId(id)})
+	try:
+		post = twip.find_one({'_id': ObjectId(id)})
+	except:
+		return jsonify(status = 'error', error = 'Not correct id format')
 	if post is None:
 		return jsonify(status = 'error', error = 'No post with the id of'+str(id))
 	if request.method == 'GET':
