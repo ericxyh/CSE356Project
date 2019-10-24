@@ -13,9 +13,13 @@ twip = db.posts
 app = Flask(__name__)
 mail = Mail(app)
 
-@app.route('/', methods = ['GET','POST'])
+@app.route('/', methods = ['GET'])
 def default():
-	return('Welcome!')
+	return render_template('homepage.html')
+
+@app.route('/static/<pname>', methods = ['GET'])
+def getpage(pname):
+	return render_template('%s.html' % pname)
 
 @app.route('/reset', methods = ['POST'])
 def reset():

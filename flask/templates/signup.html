@@ -1,0 +1,44 @@
+<html>
+<head>
+<script>
+function createAccount(){
+	var json = {};
+	json.username = document.getElementById("username").value;
+	json.password = document.getElementById("password").value;
+	json.email = document.getElementById("email").value;
+	var request = new XMLHttpRequest();
+	request.onreadystatechange = function(){
+		if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
+			var results = JSON.parse(request.responseText);
+			if(results.status === "OK")
+				document.getElementById("result").innerHTML = "Account created. Please verify with email and key to log in"
+			if(results.status === "error")
+				document.getElementById("result").innerHTML = results.error
+		}
+	}
+	request.open("POST", "/adduser",true);
+	request.setRequestHeader("Content-Type","application/json");
+	request.send(JSON.stringify(json));
+}
+</script>
+
+
+</head>
+<body>
+Signup!
+  Username:<br>
+  <input type="text" id="username">
+  <br>
+  Password:<br>
+  <input type="password" id="password">
+  <br>
+  Email:<br>
+  <input type="text" id="email">
+  <br>
+<br>
+<button onclick="createAccount()">Register</button>
+<br>
+<h3><a href="/">Back</a></h3>
+<div id="result"></div>
+</body>
+</html>
