@@ -8,9 +8,10 @@ function logout(){
 		if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
 			var results = JSON.parse(request.responseText);
 			if(results.status === "OK")
-				document.getElementById("result").innerHTML = "Logged out. Please refresh page."
+				document.getElementById("result").innerHTML = "Logged out. Please refresh page.";
+				document.cookie="user=;expires=Thu; 01 Jan 1970";
 			if(results.status === "error")
-				document.getElementById("result").innerHTML = results.error
+				document.getElementById("result").innerHTML = results.error;
 		}
 	}
 	request.open("POST", "/logout",true);
