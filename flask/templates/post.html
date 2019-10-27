@@ -3,6 +3,12 @@
 <script>
 function post(){
 	var json = {};
+	if (document.getElementById("prt").checked){
+		json.childType = document.getElementById("prt").value;
+	}
+	else if (document.getElementById("prp").checked){
+		json.childType = document.getElementById("prp").value;
+	}
 	json.content = document.getElementById("postContent").value;
 	var request = new XMLHttpRequest();
 	request.onreadystatechange = function(){
@@ -26,11 +32,16 @@ function post(){
 <body>
 
 {% if login %}
-Make a post!<br>
+Make a post, {{login}}!<br>
+Type of post:<br>
+<input type="radio" name="ptype" id="prt" value="retweet"> Retweet<br>
+<input type="radio" name="ptype" id="prp" value="reply"> Reply<br>
+<input type="radio" name="ptype" id="nan" value="none" checked> Other<br>  
 <textarea id="postContent" rows="4" cols="50" required>
 </textarea>
 <br>
 <button onclick="post()">Post</button>
+<br>
 <div id="result"></div>
 
 {% else %}

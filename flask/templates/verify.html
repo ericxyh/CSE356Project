@@ -6,6 +6,14 @@ function verifyAccount(){
 	var json = {};
 	json.email = document.getElementById("email").value;
 	json.key = document.getElementById("key").value;
+	if (json.email == ""){
+		document.getElementById("result").innerHTML = "Please enter email";
+		return false;
+	}
+	if (json.key == ""){ 
+                document.getElementById("result").innerHTML = "Please enter key";
+                return false;
+        }
 	var request = new XMLHttpRequest();
 	request.onreadystatechange = function(){
 		if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
@@ -19,19 +27,21 @@ function verifyAccount(){
 	request.open("POST", "/verify",true);
 	request.setRequestHeader("Content-Type","application/json");
 	request.send(JSON.stringify(json));
+	return false;
 }
 </script>
 </head>
 <body>
 Verify!<br>
 <br>
+<form>
   Email:<br>
   <input type="text" id="email" required>
   <br>
   Key:<br>
   <input type="text" id="key" required>
   <br>
-<br>
+</form>
 <button onclick="verifyAccount()">Verify</button>
 <br>
 <h3><a href="/">Back</a></h3>

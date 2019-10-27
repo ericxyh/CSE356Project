@@ -55,7 +55,7 @@ function multiSearch(){
 				}
 				else{
 					for (var i = 0; i < results.items.length; i++){
-						res += postChange(results.items[i]) +"<br>";
+						res += postChange(results.items[i]) +"<br><br>";
 					}
 					document.getElementById("result").innerHTML = res;
 				}
@@ -88,7 +88,8 @@ number:<br>
 <br>
 <button onclick="multiSearch()">GroupSearch</button>
 <br>
-
+<br>
+<br>
 <div id="result"></div>
 </body>
 </html>

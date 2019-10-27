@@ -5,6 +5,14 @@ function login(){
 	var json = {};
 	json.username = document.getElementById("username").value;
 	json.password = document.getElementById("password").value;
+	if (json.username == ""){
+                document.getElementById("result").innerHTML = "Please enter username";
+                return false;
+        }
+	if (json.password == ""){
+                document.getElementById("result").innerHTML = "Please enter password";
+                return false;
+        }
 	var request = new XMLHttpRequest();
 	request.onreadystatechange = function(){
 		if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
@@ -31,6 +39,7 @@ Login!<br>
   <input type="password" id="password" required>
   <br>
 <button onclick="login()">Login</button>
+<br>
 <h3><a href="/">Back</a></h3>
 <div id="result"></div>
 </body>

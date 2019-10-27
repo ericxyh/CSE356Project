@@ -69,7 +69,7 @@ def login():
 		luser = twiu.find_one({'username' : lreq['username'], 'password' : lreq['password']})
 #		print(luser)
 		if luser is None:
-			return jsonify(status = 'error', error = 'User does not exist')
+			return jsonify(status = 'error', error = 'Username or password is wrong')
 		elif luser['verify'] != 'yes':
 			return jsonify(status = 'error', error = 'User not verified')
 		else:

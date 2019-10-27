@@ -6,6 +6,18 @@ function createAccount(){
 	json.username = document.getElementById("username").value;
 	json.password = document.getElementById("password").value;
 	json.email = document.getElementById("email").value;
+	if (json.username == ""){
+                document.getElementById("result").innerHTML = "Please enter username";
+                return false;
+        }
+	if (json.password == ""){
+                document.getElementById("result").innerHTML = "Please enter password";
+                return false;
+        }
+	if (json.email == ""){
+                document.getElementById("result").innerHTML = "Please enter email";
+                return false;
+        }
 	var request = new XMLHttpRequest();
 	request.onreadystatechange = function(){
 		if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
@@ -19,6 +31,7 @@ function createAccount(){
 	request.open("POST", "/adduser",true);
 	request.setRequestHeader("Content-Type","application/json");
 	request.send(JSON.stringify(json));
+	return false;
 }
 </script>
 
@@ -27,7 +40,6 @@ function createAccount(){
 <body>
 Signup!<br>
 <br>
-<form onsubmit="createAccount()">
   Username:<br>
   <input type="text" id="username" required>
   <br>
@@ -37,10 +49,7 @@ Signup!<br>
   Email:<br>
   <input type="text" id="email" required>
   <br>
-  <input type="submit" value="Register">
-  <br>
-<br>
-</form>
+<button onclick="createAccount()">Register</button>
 <br>
 <h3><a href="/">Back</a></h3>
 <div id="result"></div>

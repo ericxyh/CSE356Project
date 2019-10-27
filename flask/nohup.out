@@ -1,0 +1,97 @@
+ * Serving Flask app "twitter" (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+ * Running on http://0.0.0.0:80/ (Press CTRL+C to quit)
+130.245.192.23 - - [27/Oct/2019 23:28:14] "GET / HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:28:14] "GET /favicon.ico HTTP/1.1" 404 -
+130.245.192.23 - - [27/Oct/2019 23:28:16] "GET /static/signup HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:28:18] "GET / HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:28:31] "GET / HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:28:32] "GET /favicon.ico HTTP/1.1" 404 -
+130.245.192.23 - - [27/Oct/2019 23:28:56] "GET / HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:28:57] "GET /favicon.ico HTTP/1.1" 404 -
+130.245.192.23 - - [27/Oct/2019 23:29:01] "GET /static/signup HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:29:05] "POST /adduser HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:29:06] "GET /static/verify HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:29:09] "POST /verify HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:29:10] "GET /static/login HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:29:14] "POST /login HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:29:14] "GET / HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:29:16] "GET /static/search HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:29:18] "POST /search HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:29:19] "GET / HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:29:20] "GET /static/post HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:29:29] "POST /additem HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:29:29] "GET /static/post?ptype=none HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:31:01] "GET /static/post?ptype=none HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:31:01] "GET /favicon.ico HTTP/1.1" 404 -
+130.245.192.23 - - [27/Oct/2019 23:31:07] "POST /additem HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:31:07] "GET /static/post?ptype=reply HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:31:09] "GET / HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:31:13] "GET /static/post HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:31:15] "POST /additem HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:31:15] "GET /static/post?ptype=none HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:31:16] "GET / HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:31:17] "GET /static/search HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:31:20] "POST /search HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:31:25] "GET /item/5db628c3622f1125707fd24f HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:31:28] "POST /search HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:32:35] "GET /static/search HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:32:35] "GET /favicon.ico HTTP/1.1" 404 -
+130.245.192.23 - - [27/Oct/2019 23:32:36] "POST /search HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:34:15] "GET / HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:34:15] "GET /favicon.ico HTTP/1.1" 404 -
+Traceback (most recent call last):
+  File "twitter.py", line 1, in <module>
+    from flask import Flask, request, render_template, jsonify, make_response
+  File "/home/ubuntu/.local/lib/python2.7/site-packages/flask/__init__.py", line 19, in <module>
+    from . import json
+  File "/home/ubuntu/.local/lib/python2.7/site-packages/flask/json/__init__.py", line 15, in <module>
+    from itsdangerous import json as _json
+  File "/home/ubuntu/.local/lib/python2.7/site-packages/itsdangerous/__init__.py", line 19, in <module>
+    from .url_safe import URLSafeSerializer
+  File "/home/ubuntu/.local/lib/python2.7/site-packages/itsdangerous/url_safe.py", line 1, in <module>
+    import zlib
+ImportError: No module named zlib
+Traceback (most recent call last):
+  File "twitter.py", line 1, in <module>
+    from flask import Flask, request, render_template, jsonify, make_response
+  File "/home/ubuntu/.local/lib/python2.7/site-packages/flask/__init__.py", line 19, in <module>
+    from . import json
+  File "/home/ubuntu/.local/lib/python2.7/site-packages/flask/json/__init__.py", line 15, in <module>
+    from itsdangerous import json as _json
+  File "/home/ubuntu/.local/lib/python2.7/site-packages/itsdangerous/__init__.py", line 19, in <module>
+    from .url_safe import URLSafeSerializer
+  File "/home/ubuntu/.local/lib/python2.7/site-packages/itsdangerous/url_safe.py", line 1, in <module>
+    import zlib
+ImportError: No module named zlib
+Traceback (most recent call last):
+  File "twitter.py", line 1, in <module>
+    from flask import Flask, request, render_template, jsonify, make_response
+  File "/home/ubuntu/.local/lib/python2.7/site-packages/flask/__init__.py", line 19, in <module>
+    from . import json
+  File "/home/ubuntu/.local/lib/python2.7/site-packages/flask/json/__init__.py", line 15, in <module>
+    from itsdangerous import json as _json
+  File "/home/ubuntu/.local/lib/python2.7/site-packages/itsdangerous/__init__.py", line 19, in <module>
+    from .url_safe import URLSafeSerializer
+  File "/home/ubuntu/.local/lib/python2.7/site-packages/itsdangerous/url_safe.py", line 1, in <module>
+    import zlib
+ImportError: No module named zlib
+ * Serving Flask app "twitter" (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+ * Running on http://0.0.0.0:80/ (Press CTRL+C to quit)
+130.245.192.23 - - [27/Oct/2019 23:35:56] "GET / HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:35:57] "GET /favicon.ico HTTP/1.1" 404 -
+130.245.192.23 - - [27/Oct/2019 23:35:58] "GET /static/search HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:35:59] "POST /search HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:36:00] "GET / HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:36:01] "GET /static/login HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:36:05] "POST /login HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:36:49] "GET /static/login HTTP/1.1" 200 -
+130.245.192.23 - - [27/Oct/2019 23:36:49] "GET /favicon.ico HTTP/1.1" 404 -
+130.245.192.23 - - [27/Oct/2019 23:36:53] "POST /login HTTP/1.1" 200 -
