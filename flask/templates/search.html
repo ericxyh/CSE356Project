@@ -2,21 +2,35 @@
 <head>
 <script>
 
+//change thing to more visible form
+function postChange(i){
+	var ans = "";
+	ans += i.id + ", Posted by "+i.username+" at "+i.timestamp+"<br>";
+	ans += i.content+"<br>";
+	ans += "Likes:" + i.property.likes + " Retweets: " + i.retweeted 
+	return ans;
+}
+
 function singleSearch(){
 	document.getElementById("result").innerHTML = ""
 	var it  = document.getElementById("pid").value;
-	var request = new XMLHttpRequest();
-	request.onreadystatechange = function(){
-		if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
-			var results = JSON.parse(request.responseText);
-			if(results.status === "OK")
-				document.getElementById("result").innerHTML = "Account created. Please verify with email and key to log in"
-			if(results.status === "error")
-				document.getElementById("result").innerHTML = results.error
-		}
+	if (it === ''){
+		document.getElementById("result").innerHTML = 'Please enter ID'
 	}
-	request.open("GET", "/item/"+it,true);
-	request.send();
+	else{
+		var request = new XMLHttpRequest();
+		request.onreadystatechange = function(){
+			if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
+				var results = JSON.parse(request.responseText);
+				if(results.status === "OK")
+					document.getElementById("result").innerHTML = postChange(results.item) +"<br>"
+				if(results.status === "error")
+					document.getElementById("result").innerHTML = results.error
+			}
+		}
+		request.open("GET", "/item/"+it,true);
+		request.send();
+	}
 }
 
 function multiSearch(){
@@ -36,10 +50,15 @@ function multiSearch(){
 			var results = JSON.parse(request.responseText);
 			if(results.status === "OK"){
 				var res = "";
-				for (var i = 0; i < results.items.length; i++){
-					res += results.items[i] +"<br>";
+				if (results.items.length == 0){
+					document.getElementById("result").innerHTML = 'No items found'
 				}
-				document.getElementById("result").innerHTML = res;
+				else{
+					for (var i = 0; i < results.items.length; i++){
+						res += postChange(results.items[i]) +"<br>";
+					}
+					document.getElementById("result").innerHTML = res;
+				}
 			}
 			if(results.status === "error")
 				document.getElementById("result").innerHTML = results.error;
@@ -60,7 +79,7 @@ id:<br>
 <input type="text" id="pid">
 <br>
 <button onclick="singleSearch()">ID Search</button>
-<br>
+<br><br>
 unix time:<br>
 <input type="number" id="time">
 <br>

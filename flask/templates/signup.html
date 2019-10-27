@@ -11,7 +11,7 @@ function createAccount(){
 		if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
 			var results = JSON.parse(request.responseText);
 			if(results.status === "OK")
-				document.getElementById("result").innerHTML = "Account created. Please verify with email and key to log in"
+				document.getElementById("result").innerHTML = "Account created. Please verify with email and key to log in. <br> <h3><a href="/static/verify">Verify</a></h3>"
 			if(results.status === "error")
 				document.getElementById("result").innerHTML = results.error
 		}
@@ -26,14 +26,15 @@ function createAccount(){
 </head>
 <body>
 Signup!<br>
+<br>
   Username:<br>
-  <input type="text" id="username">
+  <input type="text" id="username" required>
   <br>
   Password:<br>
-  <input type="password" id="password">
+  <input type="password" id="password" required>
   <br>
   Email:<br>
-  <input type="text" id="email">
+  <input type="text" id="email" required>
   <br>
 <br>
 <button onclick="createAccount()">Register</button>

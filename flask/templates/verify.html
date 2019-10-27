@@ -11,7 +11,7 @@ function verifyAccount(){
 		if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
 			var results = JSON.parse(request.responseText);
 			if(results.status === "OK")
-				document.getElementById("result").innerHTML = "Account verified. Please log in now."
+				document.getElementById("result").innerHTML = "Account verified. Please log in now.<br><h3><a href="/static/login">Login</a></h3>"
 			if(results.status === "error")
 				document.getElementById("result").innerHTML = results.error
 		}
@@ -24,11 +24,12 @@ function verifyAccount(){
 </head>
 <body>
 Verify!<br>
+<br>
   Email:<br>
-  <input type="text" id="email">
+  <input type="text" id="email" required>
   <br>
   Key:<br>
-  <input type="text" id="key">
+  <input type="text" id="key" required>
   <br>
 <br>
 <button onclick="verifyAccount()">Verify</button>

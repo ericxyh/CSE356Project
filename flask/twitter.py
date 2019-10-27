@@ -23,7 +23,11 @@ def default():
 
 @app.route('/static/<pname>', methods = ['GET'])
 def getpage(pname):
-	return render_template('%s.html' % pname)
+	u = request.cookies.get('user')
+	if u is None:
+		return render_template('%s.html' % pname)
+	else:
+		return render_template('%s.html' % pname, login=u)
 
 @app.route('/reset', methods = ['POST'])
 def reset():
@@ -81,7 +85,7 @@ def logout():
 			return jsonify(status = 'error', error = 'Not logged in')
 		else:
 			resp = make_response()
-			resp.set_cookie('user','',expires=0)
+			resp.delete_cookie('user')
 			return jsonify(status = 'OK', error = '')
 
 @app.route('/verify', methods = ['POST'])
