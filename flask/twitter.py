@@ -149,7 +149,9 @@ def getPost(id):
 		}
 		return jsonify(status = 'OK', item = ifound)
 	if request.method == 'DELETE':
-		pass
+		u = request.cookies.get('user')
+		if u is None:
+			return jsonify(status = 'error', error = 'Not logged in')
 ####
 
 @app.route('/search', methods = ['POST'])
