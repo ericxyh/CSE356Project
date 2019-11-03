@@ -29,7 +29,7 @@ def getpage(pname):
 	else:
 		return render_template('%s.html' % pname, login=u)
 
-@app.route('/reset', methods = ['POST'])
+@app.route('/reset', methods = ['GET','POST'])
 def reset():
 	twiu.remove()
 	twip.remove()
@@ -48,7 +48,9 @@ def addUser():
 			'password' : nuser['password'],
 			'email' : nuser['email'],
 			'key' : 'abracadabra',
-			'verify' : 'no'
+			'verify' : 'no',
+			'followers' : [],
+			'following' : []
 		}
 		twiu.insert_one(ustat)
 		vmailstr = "validation key: <"+"abracadabra"+">"
@@ -152,7 +154,17 @@ def getPost(id):
 		u = request.cookies.get('user')
 		if u is None:
 			return jsonify(status = 'error', error = 'Not logged in')
-####
+		if post['username'] is not u:
+			return jsonify(status = 'error', error = "Can't delete other people's post")
+		else:
+			re = make_response()
+			try:
+				twip.delete_one({"_id":ObjectId(id)})
+				re.status_code = 200
+				return re
+			except:
+				re.status_code = 208
+				return re
 
 @app.route('/search', methods = ['POST'])
 def search():
@@ -162,25 +174,35 @@ def search():
 		limit = 25
 		t = time.time()
 		items = []
+		search = {}
 		if 'limit' in sreq.keys():
 			limit = sreq['limit']
 			if limit > 100:
 				lim = 100
 		if 'timestamp' in sreq.keys():
 			t = sreq['timestamp']
-		for x in twip.find({'timestamp': {"$lte": t}}):
-			if len(items)>=limit:
-				break
-			else:
-				i = {
-					'id' : str(x['_id']),
-					'username' : x['username'],
-					'property' : x['property'],
-					'retweeted' : x['retweeted'],
-					'content' : x['content'],
-					'timestamp' : x['timestamp']
-				}
-				items.append(i)
+		search['timestamp'] = {"$lte": t}
+		#query
+		#username
+		if 'username' in sreq.keys():
+			search['username'] = sreq['username']
+			#cont
+		#following
+		u = request.cookies.get('user')
+		if u is not None and (search['following'] not in sreq.keys() or search['following']):
+			suser = twiu.find_one({'username' : lreq['username']})
+			suser['following']
+			#cont
+		for x in twip.find(search).limit(lim):
+			i = {
+				'id' : str(x['_id']),
+				'username' : x['username'],
+				'property' : x['property'],
+				'retweeted' : x['retweeted'],
+				'content' : x['content'],
+				'timestamp' : x['timestamp']
+			}
+			items.append(i)
 #		print(items)
 		return jsonify(status = 'OK', items = items)
 
