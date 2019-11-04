@@ -2,13 +2,14 @@ from flask import Flask, request, render_template, jsonify, make_response
 from flask_mail import Mail, Message
 from bson.objectid import ObjectId
 import time, random, smtplib
-from pymongo import MongoClient
+from pymongo import MongoClient, TEXT
 
 
-client = MongoClient()
+client = MongoClient("localhost:27017")
 db = client.twitter
 twiu = db.users
 twip = db.posts
+twip.create_index([('content', TEXT)])
 
 app = Flask(__name__)
 mail = Mail(app)
@@ -171,28 +172,28 @@ def search():
 ### search query, username, following
 	if request.method == 'POST':
 		sreq = request.get_json()
-		limit = 25
-		t = time.time()
-		items = []
 		search = {}
+		lim = 25
 		if 'limit' in sreq.keys():
 			limit = sreq['limit']
 			if limit > 100:
 				lim = 100
+		t = time.time()
 		if 'timestamp' in sreq.keys():
 			t = sreq['timestamp']
 		search['timestamp'] = {"$lte": t}
-		#query
-		#username
+		if 'q' in sreq.keys() and sreq['q'] != '':
+			search['$text'] = {"$search": sreq['q']}
+		users = []
 		if 'username' in sreq.keys():
-			search['username'] = sreq['username']
-			#cont
-		#following
+			users.append(sreq['username'])
 		u = request.cookies.get('user')
-		if u is not None and (search['following'] not in sreq.keys() or search['following']):
-			suser = twiu.find_one({'username' : lreq['username']})
-			suser['following']
-			#cont
+		if u is not None and ('following' not in sreq.keys() or sreq['following']):
+			suser = twiu.find_one({'username' : u})
+			users.extend(suser['following'])
+		if len(users)>0:
+			search['username'] = {'$in': users}
+		items = []
 		for x in twip.find(search).limit(lim):
 			i = {
 				'id' : str(x['_id']),
@@ -208,7 +209,15 @@ def search():
 
 @app.route('/user/<username>', methods = ['GET'])
 def userProfile(username):
-	pass
+	user = twiu.find_one({'username': username})
+	if user is None:
+		return jsonify(status = 'error', error = 'No user with the name of '+username)
+	userinfo = {
+		'email' : user['email'],
+		'followers' : len(user['followers']),
+		'following' : len(user['following'])
+	}
+	return jsonify(status = 'OK', user = userinfo)
 
 @app.route('/user/<username>/posts', methods = ['GET'])
 def userPost(username):
