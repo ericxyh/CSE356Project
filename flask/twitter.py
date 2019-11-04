@@ -111,6 +111,7 @@ def verify():
 
 @app.route('/additem', methods = ['POST'])
 def addItem():
+# parent and media parameter
 	if request.method == 'POST':
 		u = request.cookies.get('user')
 		if u is None:
@@ -142,6 +143,7 @@ def getPost(id):
 	if post is None:
 		return jsonify(status = 'error', error = 'No post with the id of'+str(id))
 	if request.method == 'GET':
+#return childtype, parent, media
 		ifound = {
 			'id' : id,
 			'username' : post['username'],
@@ -152,6 +154,7 @@ def getPost(id):
 		}
 		return jsonify(status = 'OK', item = ifound)
 	if request.method == 'DELETE':
+#delete media
 		u = request.cookies.get('user')
 		re = make_response()
 		if u is None:
@@ -171,7 +174,7 @@ def getPost(id):
 
 @app.route('/search', methods = ['POST'])
 def search():
-### search query, username, following
+### rank, parent, reply, hasMedia
 	if request.method == 'POST':
 		sreq = request.get_json()
 		search = {}
@@ -296,7 +299,22 @@ def follow():
 			return jsonify(status = 'OK')
 		else:
 			return jsonify(status = 'error', error = "Can't unfollow user you aren't following")
-#Part: "test follow" failed. Error::"/follow did not return OK for unfollowing user"
+
+@app.route('/item/<id>/like', methods = ['POST'])
+def likepost(id):
+	return jsonify(status = 'OK')
+
+
+@app.route('/addmedia', methods = ['POST'])
+def addmedia():
+	return jsonify(status = 'OK')
+
+
+@app.route('/media/<id>', methods = ['GET'])
+def getmedia(id):
+	re = make_response()
+	re.status_code = 200
+	return re
 
 if __name__ == "__main__":
 #	app.debug = True
