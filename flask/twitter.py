@@ -164,7 +164,7 @@ def getPost(id):
 				re.status_code = 200
 				return re
 			except:
-				re.status_code = 208
+				re.status_code = 308
 				return re
 
 @app.route('/search', methods = ['POST'])
@@ -221,7 +221,19 @@ def userProfile(username):
 
 @app.route('/user/<username>/posts', methods = ['GET'])
 def userPost(username):
-	pass
+	user = twiu.find_one({'username': username})
+	if user is None:
+		return jsonify(status = 'error', error = 'No user with the name of '+username)
+	lim = 50
+	if request.args.get('limit') is not None:
+		lim = int(request.args.get('limit'))
+		if lim > 200:
+			lim = 200
+	upost = twip.find({'username':username}).limit(lim)
+	ans=[]
+	for u in upost:
+		ans.append(str(u['_id']))
+	return jsonify(status = 'OK', items = ans)
 
 @app.route('/user/<username>/followers', methods = ['GET'])
 def followUser(username):
