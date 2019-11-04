@@ -153,12 +153,14 @@ def getPost(id):
 		return jsonify(status = 'OK', item = ifound)
 	if request.method == 'DELETE':
 		u = request.cookies.get('user')
+		re = make_response()
 		if u is None:
-			return jsonify(status = 'error', error = 'Not logged in')
-		if post['username'] is not u:
-			return jsonify(status = 'error', error = "Can't delete other people's post")
+			re.status_code = 306
+			return re
+		if post['username'] != u:
+			re.status_code = 307
+			return re
 		else:
-			re = make_response()
 			try:
 				twip.delete_one({"_id":ObjectId(id)})
 				re.status_code = 200
@@ -236,16 +238,65 @@ def userPost(username):
 	return jsonify(status = 'OK', items = ans)
 
 @app.route('/user/<username>/followers', methods = ['GET'])
-def followUser(username):
-	pass
+def followsUser(username):
+	user = twiu.find_one({'username': username})
+	if user is None:
+		return jsonify(status = 'error', error = 'No user with the name of '+username)
+	lim = 50
+	if request.args.get('limit') is not None:
+		lim = int(request.args.get('limit'))
+		if lim > 200:
+			lim = 200
+	ans = user['followers'][:lim]
+	return jsonify(status = 'OK', users = ans)
 
 @app.route('/user/<username>/following', methods = ['GET'])
-def userFollow():
-	pass
+def userFollow(username):
+	user = twiu.find_one({'username': username})
+	if user is None:
+		return jsonify(status = 'error', error = 'No user with the name of '+username)
+	lim = 50
+	if request.args.get('limit') is not None:
+		lim = int(request.args.get('limit'))
+		if lim > 200:
+			lim = 200
+	ans = user['following'][:lim]
+	return jsonify(status = 'OK', users = ans)
 
 @app.route('/follow', methods = ['POST'])
 def follow():
-	pass
+	u = request.cookies.get('user')
+	if u is None:
+		return jsonify(status = 'error', error = 'Not logged in')
+	freq = request.get_json()
+	print(u,freq)
+	if 'username' not in freq.keys() or 'follow' not in freq.keys():
+		return jsonify(status = 'error', error = 'Need username and whether to follow or not')
+	fu = freq['username']
+	luser = twiu.find_one({'username': u})
+	fuser = twiu.find_one({'username': fu})
+	lf = luser['following']
+	ff = fuser['followers']
+	if fu in lf:
+		if freq['follow']:
+
+			return jsonify(status = 'error', error = 'Already following the user')
+		else:
+			twiu.update_one({'username' : u}, {"$pull" : { 'following' : fu}})
+			twiu.update_one({'username' : fu}, {"$pull" : { 'followers' : u}})
+			print(twiu.find_one({'username': u}))
+			print(twiu.find_one({'username': fu}))
+			return jsonify(status = 'OK')
+	else:
+		if freq['follow']:
+			twiu.update_one({'username' : u}, {"$push" : { 'following' : fu}})
+			twiu.update_one({'username' : fu}, {"$push" : { 'followers' : u}})
+			print(twiu.find_one({'username': u}))
+			print(twiu.find_one({'username': fu}))
+			return jsonify(status = 'OK')
+		else:
+			return jsonify(status = 'error', error = "Can't unfollow user you aren't following")
+#Part: "test follow" failed. Error::"/follow did not return OK for unfollowing user"
 
 if __name__ == "__main__":
 #	app.debug = True
