@@ -11,6 +11,11 @@ function postChange(i){
 	return ans;
 }
 
+function userChange(u){
+	var ans = "";
+	return ans;
+}
+
 function singleSearch(){
 	document.getElementById("result").innerHTML = ""
 	var it  = document.getElementById("pid").value;
@@ -38,11 +43,25 @@ function multiSearch(){
 	var json = {};
 	var t = document.getElementById("time").value;
 	var l = document.getElementById("num").value;
+	var q = document.getElementById("q").value;
+	var u = document.getElementById("uname").value;
 	if (t!=""){
-		json.timestamp = parseInt(t)
+		json.timestamp = parseInt(t);
 	}
 	if (l!=""){
-		json.limit = parseInt(l)
+		json.limit = parseInt(l);
+	}
+	if (q!=""){
+		json.q = q;
+	}
+	if (u!=""){
+		json.username = u;
+	}
+	if ("{{login}}"){
+		json.following = document.getElementById("following").value;
+	}
+	else{
+		json.following = false
 	}
 	var request = new XMLHttpRequest();
 	request.onreadystatechange = function(){
@@ -69,16 +88,38 @@ function multiSearch(){
 	request.send(JSON.stringify(json));
 }
 
+function userSearch(){
+	document.getElementById("result").innerHTML = ""
+	var it  = document.getElementById("uid").value;
+	if (it === ''){
+		document.getElementById("result").innerHTML = 'Please enter ID';
+	}
+	else{
+		var request = new XMLHttpRequest();
+		request.onreadystatechange = function(){
+			if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
+				var results = JSON.parse(request.responseText);
+				if(results.status === "OK")
+					document.getElementById("result").innerHTML = results.user +"<br>"
+				if(results.status === "error")
+					document.getElementById("result").innerHTML = results.error
+			}
+		}
+		request.open("GET", "/user/"+it,true);
+		request.send();
+	}
+}
+
 </script>
 </head>
 <body>
 
 <h3><a href="/">Back</a></h3><br>
 
-id:<br>
+post id:<br>
 <input type="text" id="pid">
 <br>
-<button onclick="singleSearch()">ID Search</button>
+<button onclick="singleSearch()">Post Search</button>
 <br><br>
 unix time:<br>
 <input type="number" id="time">
@@ -86,10 +127,28 @@ unix time:<br>
 number:<br>
 <input type="number" min="1" max="100" id="num">
 <br>
+query:<br>
+<input type="text" id="q">
+<br>
+Posted by:<br>
+<input type="text" id="uname">
+<br>
+{% if login %}
+following:
+<input type="checkbox" id="following" checked>
+{% endif %}
+<br>
 <button onclick="multiSearch()">GroupSearch</button>
+<br><br>
+user id:<br>
+<input type="text" id="uid">
 <br>
+<button onclick="userSearch()">User Search</button>
 <br>
+<h1>FINISH USER INFO SEARCH (follow, lists)</h1>
+<h3>Result:</h3>
 <br>
 <div id="result"></div>
+<div id="result2"></div>
 </body>
 </html>

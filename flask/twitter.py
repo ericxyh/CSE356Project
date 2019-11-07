@@ -195,7 +195,8 @@ def search():
 		u = request.cookies.get('user')
 		if u is not None and ('following' not in sreq.keys() or sreq['following']):
 			suser = twiu.find_one({'username' : u})
-			users.extend(suser['following'])
+			if suser:
+				users.extend(suser['following'])
 		if len(users)>0:
 			search['username'] = {'$in': users}
 		items = []
