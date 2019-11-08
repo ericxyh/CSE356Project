@@ -1,0 +1,95 @@
+<html>
+<head>
+<script>
+
+var uid = '{{login}}';
+
+var request = new XMLHttpRequest();
+request.onreadystatechange = function(){
+	if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
+		var results = JSON.parse(request.responseText);
+		if(results.status === "OK"){
+            var res = "";
+            var ilist = results.items;
+            if (ilist.length > 0){
+                res = '<select id="mySelect" onchange="showPost()">'
+                for (let i = 0; i < ilist.length; i++) {
+                    res += '<option value="'+ilist[i]+'">'+ilist[i]+'</option>'
+                }
+                res += '</select>';
+            }
+            else{
+                res = "No Posts to delete."
+            }
+            document.getElementById("posts").innerHTML = res;
+    	}
+		if(results.status === "error"){
+			document.getElementById("posts").innerHTML = results.error;
+        }
+    }
+}
+request.open("GET", "/user/"+uid+"/posts?limit=200",true);
+request.send();
+
+function showPost() {
+    var id = document.getElementById("mySelect").value;
+    var request = new XMLHttpRequest();
+	request.onreadystatechange = function(){
+		if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
+			var results = JSON.parse(request.responseText);
+			if(results.status === "OK")
+				document.getElementById("postContent").innerHTML = postChange(results.item)
+			if(results.status === "error")
+				document.getElementById("postContent").innerHTML = results.error
+		}
+	}
+	request.open("GET", "/item/"+id,true);
+	request.send();
+}
+
+function postChange(i){
+	var ans = "";
+	ans += i.id + ", Posted by "+i.username+" at "+i.timestamp+"\n\nContents:\n";
+	ans += i.content+"\n";
+	ans += "Likes:" + i.property.likes + " Retweets: " + i.retweeted 
+	return ans;
+}
+
+function del() {
+    var id = document.getElementById("mySelect").value;
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function(){
+		if(this.readyState == 4 ){
+            if (this.status == 200) {
+                document.getElementById('result').innerHTML = 'Deletion success!';
+            } else {
+                document.getElementById('result').innerHTML = 'Deletion failed.';
+            }
+		}
+	}
+    request.open("DELETE", "/item/"+id,true);
+	request.send();
+}
+
+</script>
+
+
+</head>
+<body>
+
+{% if login %}
+Delete a post, {{login}}!<br>
+<div id='posts'></div>
+<button onclick="del()">Delete</button>
+<br>
+<textarea id="postContent" rows="20" cols="50" disabled>
+</textarea>
+<div id="result"></div>
+
+{% else %}
+You're not logged in to delete your post!
+<h3><a href="/stat/login">Login</a></h3><br>
+{% endif %}
+<h3><a href="/">Back</a></h3>
+</body>
+</html>

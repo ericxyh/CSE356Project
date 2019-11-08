@@ -22,17 +22,17 @@ function logout(){
 </head>
 <body>
 Welcome to fake twitter!<br>
-<h3><a href="/static/signup">Signup</a></h3><br>
-<h3><a href="/static/verify">Verify</a></h3><br>
+<h3><a href="/stat/signup">Signup</a></h3><br>
+<h3><a href="/stat/verify">Verify</a></h3><br>
 {% if login %}
 You are logged in as {{login}}.
-<h3><a href="/static/post">Post</a></h3><br>
-<h3><a href="/static/delete">Delete</a></h3><br>
+<h3><a href="/stat/post">Post</a></h3><br>
+<h3><a href="/stat/delete">Delete</a></h3><br>
 <button onclick="logout()">Logout</button>
 <div id="result"></div>
 {% else %}
-<h3><a href="/static/login">Login</a></h3><br>
+<h3><a href="/stat/login">Login</a></h3><br>
 {% endif %}
-<h3><a href="/static/search">Search</a></h3><br>
+<h3><a href="/stat/search">Search</a></h3><br>
 </body>
 </html>

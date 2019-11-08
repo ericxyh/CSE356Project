@@ -22,7 +22,7 @@ def default():
 	else:
 		return render_template('homepage.html',login=u)
 
-@app.route('/static/<pname>', methods = ['GET'])
+@app.route('/stat/<pname>', methods = ['GET'])
 def getpage(pname):
 	u = request.cookies.get('user')
 	if u is None:
@@ -193,12 +193,14 @@ def search():
 		if 'username' in sreq.keys():
 			users.append(sreq['username'])
 		u = request.cookies.get('user')
-		if u is not None and ('following' not in sreq.keys() or sreq['following']):
+		if u is not None and 'following' in sreq.keys() and sreq['following']:
 			suser = twiu.find_one({'username' : u})
 			if suser:
 				users.extend(suser['following'])
-		if len(users)>0:
 			search['username'] = {'$in': users}
+		else:
+			if len(users)>0:
+				search['username'] = {'$in': users}
 		items = []
 		for x in twip.find(search).limit(lim):
 			i = {
@@ -232,7 +234,7 @@ def userPost(username):
 		return jsonify(status = 'error', error = 'No user with the name of '+username)
 	lim = 50
 	if request.args.get('limit') is not None:
-		lim = int(request.args.get('limit'))
+		lim = request.args.get('limit', type = int)
 		if lim > 200:
 			lim = 200
 	upost = twip.find({'username':username}).limit(lim)
@@ -261,7 +263,7 @@ def userFollow(username):
 		return jsonify(status = 'error', error = 'No user with the name of '+username)
 	lim = 50
 	if request.args.get('limit') is not None:
-		lim = int(request.args.get('limit'))
+		lim = request.args.get('limit', type = int)
 		if lim > 200:
 			lim = 200
 	ans = user['following'][:lim]
@@ -277,8 +279,12 @@ def follow():
 	if 'username' not in freq.keys() or 'follow' not in freq.keys():
 		return jsonify(status = 'error', error = 'Need username and whether to follow or not')
 	fu = freq['username']
+	if u == fu:
+		return jsonify(status = 'error', error = "Can't follow/unfollow oneself")
 	luser = twiu.find_one({'username': u})
 	fuser = twiu.find_one({'username': fu})
+	if luser is None or fuser is None:
+		return jsonify(status = 'error', error = 'User does not exist')
 	lf = luser['following']
 	ff = fuser['followers']
 	if fu in lf:

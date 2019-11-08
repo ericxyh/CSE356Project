@@ -19,7 +19,7 @@ function verifyAccount(){
 		if(this.readyState == 4 && this.status == 200||this.readyState == 4 && this.status == 500){
 			var results = JSON.parse(request.responseText);
 			if(results.status === "OK")
-				document.getElementById("result").innerHTML = "Account verified. Please log in now.<br><h3><a href='/static/login'>Login</a></h3>"
+				document.getElementById("result").innerHTML = "Account verified. Please log in now.<br><h3><a href='/stat/login'>Login</a></h3>"
 			if(results.status === "error")
 				document.getElementById("result").innerHTML = results.error
 		}
