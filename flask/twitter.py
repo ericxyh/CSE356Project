@@ -56,7 +56,7 @@ def addUser():
 		nuser = request.get_json()
 #		print('sign up',nuser)
 		for x in twiu.find({'username' : nuser['username']}):
-			if x['email'] is nuser['email']:
+			if x['email'] == nuser['email']:
 				return jsonify(status = 'error', error = 'User already exists.'),500
 		ustat = {
 			'username': nuser['username'],
@@ -141,7 +141,8 @@ def addItem():
 			'content' : areq['content'],
 			'childType' : None,
 			'parent' : None,
-			'media' : []
+			'media' : [],
+			'rank' : 0
 		}
 		if ('childType' in areq.keys()) ^ ('parent' in areq.keys()):
 			return jsonify(status = 'error', error = 'Must have both parent and child info'),500
@@ -157,6 +158,7 @@ def addItem():
 				if papost is None:
 					return jsonify(status = 'error', error = 'No parent post with the id of '+str(paid)),500
 				twip.update_one({'_id': ObjectId(paid)}, {"$set" : {"retweeted" : papost['retweeted']+1}})
+				twip.update_one({'_id': ObjectId(paid)}, {"$set" : { 'rank' : papost['rank']+1}})
 		if 'media' in areq.keys():
 			newitem['media'] = areq['media']
 		pid = twip.insert_one(newitem)
@@ -196,28 +198,29 @@ def getPost(id):
 			'parent' : post['parent'],
 			'media' : post['media']
 		}
-		return jsonify(status = 'OK', item = ifound)
+		return jsonify(status = 'OK', item = ifound),200
 	if request.method == 'DELETE':
-#delete media
 		u = request.cookies.get('user')
-		if u is None:
-			return 306
+		if u is None or u == '':
+			return '',506
 		if post['username'] != u:
-			return 307
+			return '',507
 		else:
 			m = post['media']
+			print(m)
 			for n in m:
-				session.execute(mediadelete,[uuid(n)])
+				try:
+					session.execute(mediadelete,[uuid.UUID(n)])
+				except:
+					return '',508
 			try:
 				twip.delete_one({"_id":ObjectId(id)})
-				return 200
+				return '',200
 			except:
-				return 308
+				return '',509
 
 @app.route('/search', methods = ['POST'])
 def search():
-### rank, parent, reply, hasMedia
-#search results not ordered by timestamp, newest first
 	if request.method == 'POST':
 		sreq = request.get_json()
 		search = {}
@@ -244,39 +247,53 @@ def search():
 		else:
 			if len(users)>0:
 				search['username'] = {'$in': users}
-		#sort & rank
-		#
+		if 'replies' not in sreq.keys() or sreq['replies']:
+			if 'parent' in sreq.keys():
+				search['parent'] = sreq['parent']
+		else:
+			search['childType'] = {"$ne" : 'reply'}
+		#media
+		if 'hasMedia' in sreq.keys() and sreq['hasMedia']:
+			search['media'] = {"$ne" : []}
+		sort =[]
+		if 'rank' not in sreq.keys() or sreq['rank'] == 'interest':
+			sort.append(('rank',pymongo.DESCENDING))
+		else:
+			sort.append(('timestamp', pymongo.DESCENDING))
 		items = []
-		for x in twip.find(search).limit(lim).sort('timestamp', pymongo.DESCENDING):
+		for x in twip.find(search).limit(lim).sort(sort):
 			i = {
 				'id' : str(x['_id']),
 				'username' : x['username'],
 				'property' : {'likes' :x['property']['likes']},
 				'retweeted' : x['retweeted'],
 				'content' : x['content'],
-				'timestamp' : x['timestamp']
+				'timestamp' : x['timestamp'],
+				'childType' : x['childType'],
+				'parent' : x['parent'],
+				'media' : x['media']
 			}
 			items.append(i)
-#		print(items)
-		return jsonify(status = 'OK', items = items)
+#		print(sreq, [(i['parent'],i['childType']) for i in items] ,search)
+		return jsonify(status = 'OK', items = items),200
 
 @app.route('/user/<username>', methods = ['GET'])
 def userProfile(username):
 	user = twiu.find_one({'username': username})
 	if user is None:
-		return jsonify(status = 'error', error = 'No user with the name of '+username)
+		return jsonify(status = 'error', error = 'No user with the name of '+username),500
 	userinfo = {
 		'email' : user['email'],
 		'followers' : len(user['followers']),
 		'following' : len(user['following'])
 	}
-	return jsonify(status = 'OK', user = userinfo)
+	return jsonify(status = 'OK', user = userinfo),200
 
 @app.route('/user/<username>/posts', methods = ['GET'])
 def userPost(username):
 	user = twiu.find_one({'username': username})
 	if user is None:
-		return jsonify(status = 'error', error = 'No user with the name of '+username)
+		return jsonify(status = 'error', error = 'No user with the name of '+username),500
 	lim = 50
 	if request.args.get('limit') is not None:
 		lim = request.args.get('limit', type = int)
@@ -286,7 +303,7 @@ def userPost(username):
 	ans=[]
 	for u in upost:
 		ans.append(str(u['_id']))
-	return jsonify(status = 'OK', items = ans)
+	return jsonify(status = 'OK', items = ans),200
 
 @app.route('/user/<username>/followers', methods = ['GET'])
 def followsUser(username):
@@ -366,20 +383,19 @@ def likepost(id):
 	if post is None:
 		return jsonify(status = 'error', error = 'No post with the id of'+str(id)),500
 	llist = post['property']['list']
-	print(id,u in llist,lreq['like'],u)
 	if u in llist:
 		if lreq['like']:
 			return jsonify(status = 'error', error = 'Already liked this post'),500
 		else:
-			print('pull')
 			twip.update_one({'_id': ObjectId(id)}, {"$pull" : { 'property.list' : u}})
 			twip.update_one({'_id': ObjectId(id)}, {"$set" : { 'property.likes' : post['property']['likes']-1}})
+			twip.update_one({'_id': ObjectId(id)}, {"$set" : { 'rank' : post['rank']-1}})
 			return jsonify(status = 'OK'),200
 	else:
 		if lreq['like']:
-			print('push')
 			twip.update_one({'_id': ObjectId(id)}, {"$push" : { 'property.list' : u}})
 			twip.update_one({'_id': ObjectId(id)}, {"$set" : { 'property.likes' : post['property']['likes']+1}})
+			twip.update_one({'_id': ObjectId(id)}, {"$set" : { 'rank' : post['rank']+1}})
 			return jsonify(status = 'OK'),200
 		else:
 			return jsonify(status = 'error', error = "Can't unlike post you isn't liking"),500
@@ -397,8 +413,7 @@ def addmedia():
 	f = f['content'].read()
 	id = uuid.uuid1()
 	a = session.execute(mediaset, [id, u, f,time.time()])
-	return jsonify(status = 'OK', id = id.hex)
-# user?
+	return jsonify(status = 'OK', id = id.hex),200
 
 @app.route('/media/<id>', methods = ['GET'])
 def getmedia(id):
@@ -406,13 +421,13 @@ def getmedia(id):
 	row = session.execute(mediaget,[uid])
 	f = row.one()
 	if f is None:
-		return 460
+		return '',460
 	f=f.file
 	return Response(f, mimetype='multipart/form-data'),200
 
 if __name__ == "__main__":
 #	app.debug = True
-	app.run(host='0.0.0.0',port=80,threaded=True)
+	app.run(host='0.0.0.0',port=80)
 
 
 #delete unrelated medias
